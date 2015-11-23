@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Pony Tutorial in One</title>
+	<style type="text/css">
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/1EqTbJWOZQBfhZ0e3RL9uvesZW2xOQ-xsNqO47m55DA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/MZ1aViPqjfvZwVD_tzjjkwLUuEpTyoUstqEm5AMlJo4.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Roboto Slab';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Slab Regular'), local('RobotoSlab-Regular'), url(https://fonts.gstatic.com/s/robotoslab/v6/y7lebkjgREBJK96VQi37ZiwlidHJgAgmTjOEEzwu1L8.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Roboto Slab';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Slab Bold'), local('RobotoSlab-Bold'), url(https://fonts.gstatic.com/s/robotoslab/v6/dazS1PrQQuCxC3iOAJFEJTdGNerWpg2Hn6A-BxWgZ_I.ttf) format('truetype');
+}
+
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: auto;
+	max-width: 23cm;
+	padding: 1.2em 4% 1.5em 4%;
+	background-color: #fcfcfc;
+	color: #404040;
+	line-height: 130%;
+	font-family: "Lato", "proxima-nova", "Helvetica Neue", Arial, sans-serif;
+	font-weight: normal;
+}
+h1, h2, h3 {
+	margin: 0 0 0.6em 0;
+	font-family: "Roboto Slab", "ff-tisa-web-pro", "Georgia", Arial, sans-serif;
+	font-weight: 700;
+}
+h1 {
+	font-size: 175%;
+}
+h2 {
+	font-size: 150%;
+}
+h2.chap {
+	margin: 1.2em 0 1.2em 0;
+	font-family: "Lato", Arial, sans-serif;
+	font-size: 125%;
+}
+h2.chap:before {
+	content: "❖ ";
+	color: #2980b9;
+}
+h2.chap:after {
+	content: " ❖";
+	color: #2980b9;
+}
+h3 {
+	font-size: 125%;
+	font-weight: 300;
+	color: #2980b9;
+}
+hr {
+	display: block;
+	height: 1px;
+	border: 0;
+	border-top: 1px solid #e1e4e5;
+	margin: 24px 0;
+	padding: 0;
+}
+p {
+	margin: 0 0 1.5em 0;
+	font-size: 16px;
+	line-height: 150%;
+}
+a {
+	text-decoration: none;
+}
+a:visited {
+	color: #9b59b6;
+}
+blockquote {
+	margin-left: 24px;
+	line-height: 24px;
+	margin-bottom: 24px;
+}
+code {
+	border: 1px solid #e1e4e5;
+	max-width: 100%;
+	padding: 2px 4px 2px 4px;
+	background-color: white;
+	color: #e74c3c;
+	font-family: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console",
+		"Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
+		"Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+	font-size: 85%;
+}
+p code {
+	word-wrap: normal;
+}
+pre code {
+	display: block;
+	overflow-x: auto;
+	margin: 0 0 2em 0;
+	padding: 0.5em;
+	line-height: 130%;
+}
+code.lang-bash, code.lang-shell, pre code {
+	background-color: #333;
+	color: #dfd;
+}
+code.lang-pony {
+	background-color: #333;
+	color: white;
+}
+code.lang-c, code.lang-C {
+	background-color: #333;
+	color: #ff9;
+}
+table {
+	border: 1px solid #e1e4e5;
+	border-collapse: collapse;
+	border-spacing: 0;
+	empty-cells: show;
+	margin-bottom: 24px;
+}
+thead {
+	display: table-header-group;
+	border-color: inherit;
+	text-align: left;
+}
+th {
+	display: table-cell;
+	margin: 0;
+	overflow: visible;
+	padding: 8px 16px;
+	font-weight: bold;
+	font-size: 90%;
+	border-bottom: 2px solid #e1e4e5;
+}
+tbody {
+	display: table-row-group;
+	border-color: inherit;
+	vertical-align: middle;
+}
+tbody tr:nth-child(odd) {
+	background-color: #f3f6f6;
+}
+td {
+	margin: 0;
+	overflow: visible;
+	padding: 0.6em 16px;
+	font-size: 90%;
+	border-bottom: 1px solid #e1e4e5;
+	border-left: 1px solid #e1e4e5;
+}
+ol, ul {
+	margin: 0 0 24px 24px;
+	padding: 0;
+	font-size: 90%;
+}
+
+@page {
+	margin-top: 0.5cm;
+	margin-bottom: 2cm;
+}
+
+@media print {
+	body {
+		margin-left: 2cm;
+		background-color: white;
+	}
+	h1, h2, h3 {
+		margin: 0.2em 0 0.4em 0;
+		page-break-after: avoid;
+	}
+	h1 {
+		font-size: 150%;
+	}
+	h2 {
+		font-size: 135%;
+	}
+	h2.chap, h3 {
+		font-size: 115%;
+	}
+	p {
+		margin: 0 0 0.8em 0;
+		font-size: 14px;
+	}
+	code.lang-pony, code.lang-c, code.lang-C, code.lang-bash, code.lang-shell, pre code {
+		margin-top: 2px;
+		overflow-x: visible;
+		border: 1px solid #ccc;
+		background-color: white;
+		color: black;
+		font-size: 75%;
+	}
+	thead {
+		page-break-after: avoid;
+	}
+	pre, blockquote, li {
+		page-break-inside: avoid;
+	}
+}
+	</style>
+</head>
+<body>
+
+<!-- Insert HTML code from markdown (marked) here. -->
+
+</body>
+</html>
