@@ -1,10 +1,12 @@
+// This version handles the new mkdocs.yml format introduced in 0.1.6
+
 use "files"
 
 actor Main
   let _env: Env
   var _docsPath: String = ""
   var _currentChpName: String = ""
-  var _filesConcatenated: U16 = 0
+  var _currentChpNameWritten: Bool = false
   
   new create(env: Env) =>
     _env = env
@@ -13,85 +15,78 @@ actor Main
         _env.err.print("Two path arguments are required: input dir. and output file")
         error
       end
-      let dirPath = _env.args(1)                //  /PATH/TO/pony-tutorial
-      let outFile = File.create(_env.args(2))   //  /PATH/TO/one.md
+      let dirPath = _env.args(1)                              //  /PATH/TO/pony-tutorial
+      let outFile = File(FilePath(_env.root, _env.args(2)))   //  /PATH/TO/one.md
       let ymlPath = Path.join(dirPath, "mkdocs.yml")
+      var filesConcatenated: U16 = 0
       _docsPath = Path.join(dirPath, "docs")
-      with ymlFile = File.open(ymlPath) do
+      with ymlFile = File.open(FilePath(_env.root, ymlPath)) do
         for line in ymlFile.lines() do
           try
-            let bLeft: I64 = line.find("[")
-            let qRight: I64 = line.find("\"", bLeft + 2)
-            let mdPath: String = line.substring(bLeft + 2, qRight - 1)
+            let hyphen: I64 = line.find("- ")
+            var chpName: String = ""
+            var mdPath: String = ""
             try
-              let slash: I64 = mdPath.find("/")
-              let chpName: String = mdPath.substring(0, slash - 1)
-              let parName: String = mdPath.substring(slash + 1, -4)
-              //_env.out.print(chpName + " - " + parName)
-              appendFileToResult(mdPath, capitalize(replace(chpName, "-", " ")),
-                capitalize(replace(parName, "-", " ")), outFile)
+              let colon: I64 = line.find(":")
+              chpName = line.substring(hyphen + 2, colon - 1)
+              if line.at("d", -1) then
+                // mdPath after colon, line ends with .md
+                mdPath = line.substring(colon + 2)
+              end
             else
-              // index.md
-              let commas: U64 = line.count(",")
-              if commas >= 2 then
-                try
-                  let qChpL: I64 = line.find("\"", qRight + 1)
-                  let qChpR: I64 = line.find("\"", qChpL + 1)
-                  let chpName: String = line.substring(qChpL + 1, qChpR - 1)
-                  let qParL: I64 = line.find("\"", qChpR + 1)
-                  let qParR: I64 = line.find("\"", qParL + 1)
-                  let parName: String = line.substring(qParL + 1, qParR - 1)
-                  //_env.out.print(mdPath + ", " + chpName + ", " + parName)
-                  appendFileToResult(mdPath, chpName, parName, outFile)
-                else
-                  _env.err.print("An error occurred handling index.md")
-                end
+              // No colon
+              mdPath = line.substring(hyphen + 2)
+              try
+                let mdName: String = mdPath.split("/")(1)
+                chpName = capitalize(mdName.substring(0, -4).replace("-", " "))
               end
             end
-          end
+            
+            if (hyphen == 0) and (chpName != "") and (chpName != _currentChpName) then
+              _currentChpName = chpName
+              _currentChpNameWritten = false
+            end
+            
+            if mdPath != "" then
+              let mdFullPath: String = Path.join(_docsPath, mdPath)
+              let mdInfo = FileInfo(FilePath(_env.root, mdFullPath))
+              if mdInfo.size > 0 then
+                if not _currentChpNameWritten then
+                  outFile.print("\n___\n" + _currentChpName + "\n===\n")
+                  //_env.out.print(_currentChpName)
+                  _currentChpNameWritten = true
+                else
+                  outFile.write("\n")
+                end
+                //_env.out.print("  " + mdPath + ", " + mdInfo.size.string())
+                appendFileToResult(mdFullPath, if hyphen > 0 then chpName else "" end, outFile)
+                filesConcatenated = filesConcatenated + 1
+              end
+            end
+          end  // try
         end  // for
       end  // with
       outFile.dispose()
-      _env.out.print("Done: " + _filesConcatenated.string() + " files concatenated")
+      _env.out.print("Done: " + filesConcatenated.string() + " files concatenated")
     else
       _env.err.print("An error occurred in Main.create")
       _env.exitcode(-1)
     end
 
   fun capitalize(src: String box): String =>
-    src.substring(0, 0).upper() + src.substring(1, -1)
+    src.substring(0, 0).upper() + src.substring(1)
 
-  fun replace(src: String box, olds: String box, news: String box): String =>
-    var res: String = src.clone()
-    var offset: I64 = src.size().i64()
+  fun ref appendFileToResult(mdFullPath: String, parName: String, result: File) =>
     try
-      while offset > 0 do
-        offset = res.rfind(olds, offset)
-        res = if offset > 0 then res.substring(0, offset - 1) + news else news end +
-          res.substring(offset + olds.size().i64(), -1)
+      let mdFile = File.open(FilePath(_env.root, mdFullPath))
+      if parName != "" then
+        //result.print("§ " + parName + "\n---\n")
+        result.print("<h2 class=\"chap\">" + parName + "</h2>\n")
       end
-    end
-    res
-
-  fun ref appendFileToResult(mdPath: String, chpName: String, parName: String, result: File) =>
-    try
-      let mdFullPath: String = Path.join(_docsPath, mdPath)
-      let mdInfo = FileInfo(mdFullPath)
-      if mdInfo.size > 0 then
-        let mdFile = File.open(mdFullPath)
-        if chpName != _currentChpName then
-          result.print("\n___\n" + chpName + "\n===\n")
-          _currentChpName = chpName
-        else
-          result.write("\n")
-        end
-        result.print("§ " + parName + "\n---\n")
-        for line in mdFile.lines() do
-          result.print(line)
-        end
-        mdFile.dispose()
-        _filesConcatenated = _filesConcatenated + 1
+      for line in mdFile.lines() do
+        result.print(line)
       end
+      mdFile.dispose()
     else
-      _env.out.print("appendFileToResult failed: " + mdPath)
+      _env.out.print("appendFileToResult failed: " + mdFullPath)
     end
