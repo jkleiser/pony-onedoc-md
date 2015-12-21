@@ -1,4 +1,5 @@
 // This version handles the new mkdocs.yml format introduced in 0.1.6
+// Adjusted to work with half-open String.substring(start, end), and ISize
 
 use "files"
 
@@ -23,12 +24,12 @@ actor Main
       with ymlFile = File.open(FilePath(_env.root, ymlPath)) do
         for line in ymlFile.lines() do
           try
-            let hyphen: I64 = line.find("- ")
+            let hyphen: ISize = line.find("- ")
             var chpName: String = ""
             var mdPath: String = ""
             try
-              let colon: I64 = line.find(":")
-              chpName = line.substring(hyphen + 2, colon - 1)
+              let colon: ISize = line.find(":")
+              chpName = line.substring(hyphen + 2, colon)
               if line.at("d", -1) then
                 // mdPath after colon, line ends with .md
                 mdPath = line.substring(colon + 2)
@@ -38,7 +39,7 @@ actor Main
               mdPath = line.substring(hyphen + 2)
               try
                 let mdName: String = mdPath.split("/")(1)
-                chpName = capitalize(mdName.substring(0, -4).replace("-", " "))
+                chpName = capitalize(mdName.substring(0, -3).replace("-", " "))
               end
             end
             
@@ -74,7 +75,7 @@ actor Main
     end
 
   fun capitalize(src: String box): String =>
-    src.substring(0, 0).upper() + src.substring(1)
+    src.substring(0, 1).upper() + src.substring(1)
 
   fun ref appendFileToResult(mdFullPath: String, parName: String, result: File) =>
     try
